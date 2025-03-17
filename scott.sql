@@ -37,7 +37,13 @@
 -- 개발자 : (CRUD CREATE READ UPDATE DELECT)
 -- CRUD -> SQL(Structured Query Language : 구조질의언어) RDBMS 데이터를 다루는 언어
 -- GUI : DBeaver / CUI : SQL PLUS
-
+-- sql은 한문장씩??????
 -- 1. 조회(SELECT) - READ
 -- 사원정보 조회
 SELECT * FROM EMP e ; -- 전체 조회
+
+-- 별칭사용 deptno(부서번호) 조회
+SELECT e.DEPTNO FROM EMP e; -- e : 별칭, 있는게 편함
+SELECT deptno FROM emp;
+
+SELECT e.EMPNO, e.DEPTNO FROM emp e; -- 사원번호, 부서번호 조회
