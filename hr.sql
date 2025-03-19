@@ -121,3 +121,30 @@ WHERE
 SELECT e.EMPLOYEE_ID, e.FIRST_NAME, e.JOB_ID, e.SALARY * e.COMMISSION_PCT AS "COMMISSION" 
 FROM EMPLOYEES e
 WHERE e.COMMISSION_PCT IS NOT NULL ;
+
+
+
+-- 성이 'Curtis' 인 사람의 성, 이름, 이메일, 폰번호, 직무 조회
+-- 단 직무의 결과는 소문자로 출력한다.
+SELECT e.FIRST_NAME, e.LAST_NAME, e.EMAIL, e.PHONE_NUMBER, LOWER(e.JOB_ID) AS "JOB_ID"
+FROM EMPLOYEES e
+WHERE e.FIRST_NAME = 'Curtis';
+
+-- 부서번호가 60,70,80,90인 사원들의 사번, 성과 이름, 입사날짜, 직무를 조회
+-- 단 직무가 it_prog인 사원의 경우 '프로그래머'로 변경하여 출력한다.
+SELECT e.EMPLOYEE_ID, e.FIRST_NAME, e.LAST_NAME, e.HIRE_DATE, REPLACE(e.JOB_ID, 'IT_PROG', '프로그래머') AS "JOB_ID"
+FROM EMPLOYEES e
+WHERE e.DEPARTMENT_ID BETWEEN  60 AND 90; 
+
+-- 직무가 AD_PRES, PU_CLERK인 사원들의 사번, 성,이름,부서번호,직무 조회
+-- 단 산원명은 성과 이름을 합쳐서 출력한다(예시: Douglas Grand).
+SELECT e.EMPLOYEE_ID, e.FIRST_NAME || ' ' || e.LAST_NAME AS "NAME", e.DEPARTMENT_ID, e.JOB_ID
+FROM EMPLOYEES e 
+WHERE e.JOB_ID IN ('AD_PRES','PU_CLERK');
+
+-- 입사 10주년이 되는 날짜
+SELECT 
+e.LAST_NAME,
+e.HIRE_DATE,
+ADD_MONTHS(e.HIRE_DATE, 120) AS "10주년"
+FROM EMPLOYEES e;
