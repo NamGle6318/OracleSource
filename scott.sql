@@ -420,7 +420,7 @@ TRUNC(1234.5678, -2) AS "TRUNC6"
 FROM DUAL;
 
 SELECT -- CEIL() 가장 큰 정수, FLOOR() 가장 작은 정수 , 올림과 내림하는 듯
-CEIL(3.14), FLOOR(3.14), CEIL(-3.14), FLOOR(-3.14)
+CEIL(7.609), FLOOR(3.14), CEIL(-3.14), FLOOR(-3.14)
 FROM DUAL;
 
 -- MOD() 나머지
@@ -495,3 +495,276 @@ TO_CHAR(SYSDATE, 'HH12:MI:SS AM'),
 TO_CHAR(SYSDATE, 'HH:MI:SS PM'),
 TO_CHAR(SYSDATE, 'HH:MI:SS')
 FROM DUAL;
+
+-- 돈 양식으로 변경 
+-- 9 : 숫자 한 자리
+-- 0 : 숫자 한자리, 빈자리는 0으로 채움
+SELECT e.SAL, TO_CHAR(e.SAL, '$999,999')
+FROM EMP e;
+
+-- TO_NUMBER()
+-- 문자열 데이터와 숫자 데이터 연산
+SELECT 1300-'1500', 1300 + '1500'
+FROM DUAL;
+-- 문자열(숫자) 끼리의 연산
+SELECT '1300' - '1500'
+FROM DUAL;
+
+-- TO_NUMBER('문자열 데이터', '인식할 숫자 형태')
+SELECT TO_NUMBER('1,300', '999,999') - TO_NUMBER('1,500', '999,999')
+FROM DUAL;
+
+SELECT 
+TO_DATE('1988-02-25', 'YY-MM-DD') AS DATE1,
+TO_DATE('1988-02-25', 'YY/MM/DD') AS DATE2,
+TO_DATE('1988-02-25', 'YY/MM-DD') AS DATE3
+FROM DUAL;
+
+--NULL
+-- NULL 포함시, 산술연산이나 비교연산자(IS NULL, IS NOT NULL)가 제대로 수행되지 않음
+
+--1. NVL(널 여부를 검사할 데이터, 널일때 반환할 데이터)
+--2. NVL2(널 여부를 검사할 데이터, 널이 아닐때 반환할 데이터 ,널일때 반환할 데이터)
+SELECT
+	e.EMPNO,
+	e.ENAME,
+	e.SAL,
+	e.COMM,
+	e.SAL + e.COMM,
+	NVL(e.COMM, 0),
+	e.SAL + NVL(e.COMM, 0)
+FROM
+	EMP e; 
+
+SELECT
+	e.EMPNO,
+	e.ENAME,
+	e.SAL,
+	e.COMM,
+	e.SAL + e.COMM,
+	NVL2(e.COMM, 'O', 'N/A'),
+	NVL2(e.COMM, e.SAL * 12 + e.COMM,e.SAL*12) AS 연봉
+FROM
+	EMP e; 
+
+-- 자바의 if, switch 구문과 유사
+-- DECODE ( 조건식은 무조건 = 비교)
+-- DECODE(검사대상이 될 데이터,
+-- 조건1, 조건1 만족시 반환할 거, 
+-- 조건2, 조건2 만족시 반환할 거,
+-- 조건a, 조건a 만족시 반환할 거
+-- 조건1~조건a 만족하지 않을 때 반환할 결과
+-- )
+
+-- CASE
+-- DECODE검사대상이 될 데이터
+-- WHEN 조건1 THEN 조건1 만족시 반환할 거 
+-- WHEN 조건2 THEN 조건2 만족시 반환할 거
+-- WHEN 조건a THEN 조건a 만족시 반환할 거
+-- ELSE 조건1~조건a 만족하지 않을 때 반환할 결과
+-- END
+
+-- 직책이 MANAAGER 인 사원은 급여의 10% 인상
+-- 직책이 SALESMAN 인 사원은 급여의 5% 인상
+-- 직책이 ANALYST 인 사원은 급여의 동결
+-- 나머지 직책의 사우너은 급여 3%인상
+
+SELECT
+	e.EMPNO,
+	e.ENAME,
+	e.JOB,
+	e.SAL,
+	DECODE(
+e.JOB, 
+'MANAGER', e.SAL * 1.1,
+'SALESMAN', e.SAL * 1.05,
+'ANALYST', e.SAL,
+e.SAL * 1.03
+) AS UPSAL
+FROM
+	EMP e;
+ 
+
+-- case
+SELECT
+	e.EMPNO,
+	e.ENAME,
+	e.JOB,
+	e.SAL,
+	CASE
+		e.JOB
+		WHEN 'MANAGER'
+		THEN e.SAL * 1.1
+		WHEN 'SALESMAN'
+		THEN e.SAL * 1.05
+		WHEN 'ANALYST'
+		THEN e.SAL
+		ELSE e.SAL * 1.03
+	END AS UPSAL
+FROM
+	EMP e;
+
+-- COMM NULL인 경우 '해당사항없음'
+-- COMM 0인 경우 '수당없음'
+-- COMM > 0 인 경우 '수당 : 800'
+
+-- 조건식을 그때 그때 붙혀도 됨
+SELECT
+	e.EMPNO,
+	e.ENAME,
+	e.JOB,
+	e.SAL,
+	CASE
+		WHEN e.COMM IS NULL
+		THEN '해당사항 없음'
+		WHEN e.COMM = 0
+		THEN '수당 없음'
+		WHEN e.COMM > 0
+		THEN '수당 : ' || e.COMM
+	END AS COMM_TEXT
+FROM
+	EMP e;
+
+-- [실습]
+-- 1. empno : 9999 형태 => 9** 변환
+--    ename : SMITH 형태 => S****(길이만큼)
+-- 출력 : 원본 EMPNO, AFTER EMPNO, 원본 ENAME, AFTER ENAME
+SELECT
+	e.EMPNO,
+	REPLACE(e.EMPNO , SUBSTR(e.EMPNO, 3) , '**') AS "AFTER EMPNO",
+	e.ENAME,
+	REPLACE(e.ENAME, SUBSTR(e.ENAME, 2), '****') AS "AFTER ENAME"
+FROM
+	EMP e;
+
+-- 데이터의 공간을 특정 문자로 채우기 : LPAD(), RPAD()
+-- (데이터, 데이터 자리수, 채울문자)
+
+-- ORACLE -> 10 자리로 표현
+SELECT
+	'Oracle',
+	LPAD('Oracle', 10, '#'),
+	RPAD('Oracle', 10, '*'),
+	LPAD('Oracle', 10),
+	RPAD('Oracle', 10)
+FROM DUAL;
+
+SELECT
+	e.EMPNO,
+	RPAD(SUBSTR(e.EMPNO, 0, 2), 4, '*') AS "AFTER EMPNO",
+	e.ENAME,
+	RPAD(SUBSTR(e.ENAME, 1, 1), LENGTH(SUBSTR(e.ENAME,1)), '*') AS "AFTER ENAME"
+FROM
+	EMP e;
+
+
+-- 2. EMP 테이블에서 사원의 월 평균 근무일수는 21일.
+-- 하루 근무시간을 8시간으로 보았을때 사원의 하루 급여(DAY_PAY),
+-- 시급(TIME_PAY) 를 계산하여 출력 ( 단 하루 급여는 소수 셋째자리에서 버리고,
+-- 시급은 둘째자리에서 반올림)
+-- 출력형태 empno,ename,sal,day_pay,time_pay
+SELECT
+e.EMPNO,
+e.ENAME,
+e.SAL,
+TRUNC(e.SAL  / 21, 2) AS day_pay,
+ROUND(e.SAL / 21 / 8, 1) AS time_pay
+FROM EMP e;
+
+
+-- 3. 입사일을 기준으로 3개월이 지난 후 첫 월요일에 정직원이 된다.
+--    사원이  정직원이 되는 날짜(R_JOB)을 'YYYY-MM-DD' 형식으로 출력
+--    단 추가수당이 없는 사원의 추가수당은 N/A로 출력
+--     출력형태 ) EMPNO,ENAME,HIREDAE,R_JOB,COMM
+
+SELECT
+e.EMPNO,
+e.ENAME,
+e.HIREDATE,
+TO_CHAR(ADD_MONTHS(e.HIREDATE, 3), 'YYYY-MM-DD') AS r_job,
+NVL(TO_CHAR(e.COMM), 'N/A') AS "COMM"
+FROM EMP e;
+
+
+
+
+-- 4. 직속상관의 사원번호가 없을 때 : 0000
+--    직속상권의 사원번호 앞두자리가 75일 때 : 5555 
+--    직속상권의 사원번호 앞두자리가 76일 때 : 6666
+--    직속상권의 사원번호 앞두자리가 77일 때 : 7777
+--    직속상권의 사원번호 앞두자리가 78일 때 : 8888
+--    그 외 직속 상관의 사원번호일때 : 본래 직속상관 사원번호 출력
+--    출력형태 EMPNO, ENAME, MGR, (CHG_MGR)
+SELECT
+e.EMPNO,
+e.ENAME,
+e.MGR,
+CASE 
+	WHEN TO_CHAR(e.MGR) IS NULL THEN '0000'
+	WHEN SUBSTR(TO_CHAR(e.MGR), 1, 2) = '75' THEN '5555'
+	WHEN SUBSTR(TO_CHAR(e.MGR), 1, 2) = '76' THEN '6666'
+	WHEN SUBSTR(TO_CHAR(e.MGR), 1, 2) = '77' THEN '7777'
+	WHEN SUBSTR(TO_CHAR(e.MGR), 1, 2) = '78' THEN '8888'
+	ELSE TO_CHAR(e.MGR) 
+END AS "CHG_MGR"
+FROM EMP e;
+
+SELECT
+e.EMPNO,
+e.ENAME,
+e.MGR,
+CASE 
+	WHEN e.MGR IS NULL THEN 0000
+	WHEN e.mgr LIKE '75%' THEN 5555
+	WHEN e.mgr LIKE '76%' THEN 6666
+	WHEN e.mgr LIKE '77%' THEN 7777
+	WHEN e.mgr LIKE '78%' THEN 8888
+	ELSE e.MGR 
+END AS "CHG_MGR"
+FROM EMP e;
+
+-- 하나의 열에 출력 결과를 담는 다중행 함수 = null 제외
+-- 1. SUM()
+-- 2. COUNT()
+-- 3. MAX()
+-- 4. MIN()
+-- 5. AVG()
+
+-- 전체 사원의 급여의 합 구하는
+SELECT
+SUM(E.SAL)
+FROM
+	EMP e;
+
+-- 전체 사원의 급여의 합 구하는데 중복된 급여는 제외한 합
+SELECT
+SUM(E.SAL), sum(DISTINCT E.SAL), sum(ALL e.sal)
+FROM
+	EMP e;
+
+-- 총사원의 인원수 구하기
+
+SELECT count(e.empno), count(e.ename), count(e.COMM), count(e.HIREDATE), count(DISTINCT(e.JOB)), COUNT(E.JOB)
+FROM emp e;
+
+SELECT DISTINCT(e.JOB)
+FROM EMP e;
+
+-- 급여의 최대값 최소값
+SELECT MAX(e.SAL) max, MIN(e.SAL) min
+FROM EMP e;
+
+-- 10번 부서 인원들의 급여 최대값
+SELECT MAX(e.SAL)
+FROM EMP e
+WHERE e.DEPTNO = 10;
+
+-- 20번 부서 인원들의 입사일중 가장 최근과 오래된 입사일
+SELECT MAX(TO_CHAR(e.HIREDATE, 'YYYY-MM-DD')) JUNIOR, MIN(TO_CHAR(e.HIREDATE, 'YYYY-MM-DD')) SENIOR
+FROM EMP e;
+
+-- 부서가 30번인 사원의 평균 급여
+SELECT AVG(e.SAL) avgSAL
+FROM EMP e
+WHERE e.DEPTNO = 30;
+
