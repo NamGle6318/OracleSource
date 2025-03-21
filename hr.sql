@@ -153,6 +153,32 @@ FROM EMPLOYEES e;
 SELECT MAX(e.SALARY) - MIN(e.SALARY) diff
 FROM EMPLOYEES e; 
 
+
+
 -- MANAGER로 근무중인 사원들의 숫자 조회
 SELECT COUNT(DISTINCT(e.MANAGER_ID))
 FROM EMPLOYEES e;
+
+-- 부서별 직원수 조회(부서번호 오름차순)
+-- 출력 : 부서번호, 직원수
+SELECT e.DEPARTMENT_ID, COUNT(e.EMPLOYEE_ID)
+FROM EMPLOYEES e
+GROUP BY (e.DEPARTMENT_ID)
+ORDER BY e.DEPARTMENT_ID;
+
+
+-- 부서별 평균연봉 조회 (부서번호 오름차순)
+-- 부서번호 평균연봉은 0의자리에서 반올림하기 (2215.45-> 2215)
+SELECT
+e.DEPARTMENT_ID, ROUND(AVG(e.SALARY))
+FROM EMPLOYEES e
+GROUP BY e.DEPARTMENT_ID
+ORDER BY e.DEPARTMENT_ID;
+
+
+-- 동일한 직무를 가진 사원의 수 조회
+-- job_id, 인원수
+SELECT
+e.JOB_ID, COUNT(e.EMPLOYEE_ID)"인원수"
+FROM EMPLOYEES e
+GROUP BY e.JOB_ID;
