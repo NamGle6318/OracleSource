@@ -179,6 +179,190 @@ ORDER BY e.DEPARTMENT_ID;
 -- 동일한 직무를 가진 사원의 수 조회
 -- job_id, 인원수
 SELECT
-e.JOB_ID, COUNT(e.EMPLOYEE_ID)"인원수"
+e.JOB_ID, COUNT(e.EMPLOYEE_ID)"인원수"0
 FROM EMPLOYEES e
 GROUP BY e.JOB_ID;
+
+
+
+
+
+
+
+-- 직원 ID가 SA_MAN인 사원들의 최대 연봉보다 높게 받는 사람들의
+-- 이름, 직책, 급여 조회
+-- 조건식 : 직원 ID = SA_MAN인 사원의 최대연봉보다 높아야함
+SELECT
+	e.LAST_NAME, e.JOB_ID, e.SALARY
+FROM
+	EMPLOYEES e
+WHERE
+	e.SALARY > ALL(SELECT E.SALARY FROM EMPLOYEES e WHERE e.JOB_ID = 'SA_MAN');
+
+-- 커미션을 받는 사원들의 부서와 연봉이 동일한 사원들의 
+-- 이름, 부서번호, 급여 조회
+-- 조건 커미션을 받는 사원들의 "부서", "연봉"이 동일한 사원들
+-- 커미션이 null이 아닌 사원들의 테이블 생성
+SELECT 
+	e.LAST_NAME,
+	e.DEPARTMENT_ID,
+	e.SALARY
+FROM
+	EMPLOYEES e
+WHERE
+	(e.DEPARTMENT_ID, e.SALARY) = ANY
+(
+	SELECT
+		e.DEPARTMENT_ID,
+		e.SALARY 
+	FROM
+		EMPLOYEES e
+	WHERE
+		e.COMMISSION_PCT IS NOT NULL)
+;
+
+
+
+-- 회사 전체 평균 연봉보다 더 버는 사원들 중 이름에 U가 있는 사원들이 근무하는 부서와 같은 그부서에 근무하는 사원들의
+-- 사번, 이름, 급여 조회
+-- 조건 : 회사 전체의 평균 연봉보다 더버는 사원들의 부서
+--        AND 이름에 U가 있는 사원이 근무하는 부서의 사원들
+SELECT 
+	e.DEPARTMENT_ID,
+	e.LAST_NAME,
+	e.SALARY
+FROM
+	EMPLOYEES e
+WHERE
+	e.DEPARTMENT_ID IN
+	(
+	SELECT
+		e.DEPARTMENT_ID 
+	FROM
+		EMPLOYEES e
+	WHERE
+		e.SALARY > (
+		SELECT
+			AVG(e.SALARY)
+		FROM
+			EMPLOYEES e)
+		AND e.LAST_NAME LIKE '%u%');
+
+-- 각 부서별 평균 연봉보다 더 받는 동일부서 사원들의 
+-- 이름, 급여, 부서번호, 해당 부서의 평균연봉 조회(부서별 평균연봉을 기준으로 오름차순 정렬)
+-- 조건 각 부서별 평균 연봉 < 더 받는 동일부서 사원들
+-- 부서와 같은 번호 AND 해당 부서의 평균보다 높은 금액
+-- 부서별 평균 연봉 테이블과 같은 부서 AND 해당 부서의 평균연봉보다 높은 금액
+SELECT 
+	e1.LAST_NAME,
+	e1.SALARY,
+	e1.DEPARTMENT_ID
+FROM
+	EMPLOYEES e1
+JOIN (
+	SELECT
+		e2.DEPARTMENT_ID,
+		AVG(SALARY) AS AVG_SAL
+	FROM
+		EMPLOYEES e2
+	GROUP BY
+		e2.DEPARTMENT_ID) e2 ON
+		e1.DEPARTMENT_ID = e2.DEPARTMENT_ID and
+	e1.SALARY > e2.avg_sal;
+
+-- 부서별 평균연봉
+SELECT
+	e.DEPARTMENT_ID, AVG(SALARY)
+FROM EMPLOYEES e
+GROUP BY e.DEPARTMENT_ID;
+
+
+-- 이름이 'Davies'인 사람보다 나중에 고용된 사원들의
+-- 이름, 입사일, 조회
+-- 조건 : 이름이 'Davies' AND 입사일보다 높은사람
+SELECT
+	e.LAST_NAME,
+	e.HIRE_DATE
+FROM EMPLOYEES e
+WHERE 
+	e.HIRE_DATE > (SELECT e.HIRE_DATE FROM EMPLOYEES e WHERE e.LAST_NAME = 'Davies');
+
+
+-- 이름이 'King'인 사원을 매니저로 두고 있는 모든 사원들의
+-- 이름, 급여 조회
+SELECT 
+	e.LAST_NAME,
+	e.SALARY
+FROM EMPLOYEES e
+WHERE e.MANAGER_ID  = ANY (SELECT e.EMPLOYEE_ID FROM EMPLOYEES e WHERE e.LAST_NAME = 'King');
+SELECT * FROM EMPLOYEES;
+
+-- 이름이 'Hall'인 사원과 동일한 연봉 및 커미션을 받는 사원들의 
+-- 이름, 부서번호, 연봉 조회
+-- 단 'Hall'은 제외
+SELECT 
+	e.LAST_NAME,
+	e.DEPARTMENT_ID,
+	e.SALARY
+FROM EMPLOYEES e
+WHERE (e.SALARY, e.COMMISSION_PCT) IN (SELECT e.SALARY, e.COMMISSION_PCT FROM EMPLOYEES e WHERE e.LAST_NAME = 'Hall')
+AND e.LAST_NAME != 'Hall';
+
+-- 이름이 'Zlotkey'인 사원과 동일한 부서에서 근무하는 모든 사원들의
+-- 사번, 고용날짜 조회
+-- 단 'Zlotkey'는 제외
+SELECT 
+	e.LAST_NAME,
+	e.HIRE_DATE
+FROM EMPLOYEES e
+WHERE e.DEPARTMENT_ID = (SELECT e.DEPARTMENT_ID FROM EMPLOYEES e WHERE e.LAST_NAME = 'Zlotkey') 
+AND e.LAST_NAME != 'Zlotkey';
+
+
+-- 부서가 위치한 지역의 국가 ID 및 국가명을 조회한다
+-- Location, contries 테이블 사용
+-- EMP에 부서테이블 JOIN 하고 LOCATION 조인하고, CONTRIES 조인
+SELECT * FROM LOCATIONS l ; -- LOCATION_ID별 COUNTRY_ID 존재
+SELECT * FROM COUNTRIES c ; -- COUNTRY_ID별 COUNTRY_NAME 존재
+SELECT * FROM EMPLOYEES e ;
+SELECT * FROM DEPARTMENTS ; -- 부서번호별 LOCATION_ID 존재
+
+SELECT DISTINCT
+	e.DEPARTMENT_ID,
+	c.COUNTRY_ID,
+	c.COUNTRY_NAME
+FROM
+	EMPLOYEES e
+JOIN DEPARTMENTS d ON
+	e.DEPARTMENT_ID = d.DEPARTMENT_ID
+JOIN LOCATIONS l ON
+	d.LOCATION_ID = l.LOCATION_ID
+JOIN COUNTRIES c ON
+	l.COUNTRY_ID = c.COUNTRY_ID
+ORDER BY e.DEPARTMENT_ID;
+
+-- 위치 id가 1700인 사원들의 연봉과 커미션을 추출한 뒤, 추출된 사원들의 연봉과 커미션이 동일한 사원정보 출력
+-- 출력 : 사번, 이름(성 + 이름), 부서번호, 급여
+-- LOCATION ID
+SELECT
+	DISTINCT
+	e.FIRST_NAME || e.LAST_NAME AS name,
+	e.DEPARTMENT_ID,
+	e.SALARY
+FROM
+	EMPLOYEES e,
+	LOCATIONS l,
+	DEPARTMENTS d
+WHERE
+	(e.SALARY,
+	NVL(e.COMMISSION_PCT, 0)) IN (
+	SELECT
+		e.SALARY,
+		NVL(e.COMMISSION_PCT, 0)
+	FROM
+		EMPLOYEES e
+	JOIN DEPARTMENTS d ON
+		e.DEPARTMENT_ID = d.DEPARTMENT_ID
+	JOIN LOCATIONS l ON
+		d.LOCATION_ID = l.LOCATION_ID
+		AND d.LOCATION_ID = 1700);
