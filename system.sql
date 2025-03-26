@@ -15,3 +15,9 @@ ALTER USER hr IDENTIFIED BY hr;
 -- 계정 잠금 해제(hr)
 ALTER USER hr account unlock;
 
+-- 데이터사전 DBA_USERS를 사용하여 사용자 정보 조회
+SELECT * FROM DBA_USERS WHERE USERNAME = 'SCOTT';
+
+-- SCOTT -> VIEW 생성 권한 부여 (GRANT)
+	-- GRANT 부여할 권한 TO USERNAME
+GRANT CREATE VIEW TO SCOTT;
