@@ -42,10 +42,11 @@ GRANT CREATE VIEW TO SCOTT;
 	-- QUOTA 테이블스페이스 크기 ON 테이블스페이스명 -> MB ON USERS
 
 -- 1. 사용자 생성
-CREATE USER C##java IDENTIFIED BY 12345
+CREATE USER C##java IDENTIFIED BY 12345;
+ALTER USER C##JAVA
 DEFAULT TABLESPACE USERS
 TEMPORARY TABLESPACE TEMP  
-QUOTA 10 ON USERS;
+QUOTA 10m ON USERS;
 
 -- 2. 권한 부여(GRANT)
 	-- GRANT 권한 ON 테이블명 TO 테이블스페이스명;
@@ -74,3 +75,8 @@ DROP USER c##TEST1; --> ORA-01922: 'C##TEST1'(을)를 삭제하려면 CASCADE를
 --> 사용자 스키마에 객체가 존재한다면 CASCADE옵션 사용해서 제거 ()
 
 DROP USER c##TEST1 CASCADE; --> 성공!
+
+grant resource to C##JAVA; 
+
+ALTER USER USERS QUOTA 100M ON ts_name;
+
